@@ -1,0 +1,128 @@
+import type { Track } from '../../domain/catalog.model';
+
+export const TYPESCRIPT_TRACK = {
+  id: 'typescript',
+  title: 'TypeScript',
+  short: 'TS',
+  description:
+    'Система типов как инструмент проектирования: дженерики, сужение, утилитарные, условные и mapped-типы, декораторы и tsconfig.',
+  accent: '#3178C6',
+  onAccent: '#FFFFFF',
+  status: 'ready',
+  sections: [
+    {
+      id: 'basics',
+      title: 'Основы',
+      lessons: [
+        {
+          id: 'basics',
+          title: 'Базовые типы и вывод типов',
+          summary: 'Примитивы, массивы, кортежи, any/unknown/never, literal types и как TS выводит типы.',
+          level: 'basic',
+          minutes: 12,
+          tags: ['unknown', 'never', 'tuple', 'inference'],
+        },
+        {
+          id: 'type-vs-interface',
+          title: 'type и interface',
+          summary: 'Чем отличаются, declaration merging, объединения и пересечения, что выбрать.',
+          level: 'basic',
+          minutes: 9,
+          tags: ['type', 'interface', 'union', 'intersection'],
+        },
+        {
+          id: 'narrowing',
+          title: 'Сужение типов и type guards',
+          summary: 'typeof, in, instanceof, discriminated unions, пользовательские guard-функции и assertNever.',
+          level: 'basic',
+          minutes: 12,
+          tags: ['narrowing', 'type guard', 'discriminated union'],
+        },
+        {
+          id: 'generics',
+          title: 'Дженерики',
+          summary: 'Обобщённые функции и типы, ограничения extends, значения по умолчанию, keyof.',
+          level: 'middle',
+          minutes: 14,
+          tags: ['generics', 'extends', 'keyof'],
+        },
+      ],
+    },
+    {
+      id: 'type-system',
+      title: 'Система типов глубже',
+      lessons: [
+        {
+          id: 'utility-types',
+          title: 'Утилитарные типы',
+          summary: 'Partial, Required, Pick, Omit, Record, ReturnType, Awaited, Parameters и их реализация.',
+          level: 'middle',
+          minutes: 11,
+          tags: ['Partial', 'Pick', 'Omit', 'Record'],
+        },
+        {
+          id: 'conditional-types',
+          title: 'Условные типы и infer',
+          summary: 'T extends U ? X : Y, дистрибутивность, infer и рекурсивные типы.',
+          level: 'advanced',
+          minutes: 14,
+          tags: ['conditional types', 'infer', 'distributive'],
+        },
+        {
+          id: 'mapped-template',
+          title: 'Mapped и template literal types',
+          summary: 'Перебор ключей, модификаторы readonly/?, переименование через as и строковые шаблоны.',
+          level: 'advanced',
+          minutes: 12,
+          tags: ['mapped types', 'template literal', 'key remapping'],
+        },
+        {
+          id: 'compatibility',
+          title: 'Совместимость, satisfies и as const',
+          summary: 'Структурная типизация, вариантность, excess property checks, branded types.',
+          level: 'advanced',
+          minutes: 12,
+          tags: ['satisfies', 'as const', 'branded', 'variance'],
+        },
+      ],
+    },
+    {
+      id: 'practice',
+      title: 'TypeScript в проекте',
+      lessons: [
+        {
+          id: 'enums-unions',
+          title: 'Enum против union-типов',
+          summary: 'Как компилируются enum, const enum, почему чаще выбирают union и объект as const.',
+          level: 'basic',
+          minutes: 8,
+          tags: ['enum', 'union', 'as const'],
+        },
+        {
+          id: 'decorators',
+          title: 'Декораторы',
+          summary: 'Экспериментальные и стандартные (TC39) декораторы, как ими пользуется Angular.',
+          level: 'middle',
+          minutes: 11,
+          tags: ['decorators', 'metadata', 'Angular'],
+        },
+        {
+          id: 'tsconfig',
+          title: 'tsconfig и строгий режим',
+          summary: 'strict, noUncheckedIndexedAccess, moduleResolution, paths, project references.',
+          level: 'middle',
+          minutes: 10,
+          tags: ['tsconfig', 'strict', 'paths'],
+        },
+        {
+          id: 'declarations',
+          title: 'Файлы объявлений .d.ts',
+          summary: 'declare, ambient-модули, расширение глобальных типов и типизация JS-библиотек.',
+          level: 'middle',
+          minutes: 9,
+          tags: ['d.ts', 'declare', 'module augmentation'],
+        },
+      ],
+    },
+  ],
+} as const satisfies Track;

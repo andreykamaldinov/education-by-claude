@@ -1,0 +1,462 @@
+@import 'tailwindcss';
+
+@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
+
+/*
+ * Design tokens. Components use semantic utilities (bg-canvas, text-muted, border-line...),
+ * so light/dark flips here in one place instead of a dark: variant on every element.
+ */
+:root {
+  --c-canvas: #f3f5f8;
+  --c-surface: #ffffff;
+  --c-sunken: #e9edf2;
+  --c-ink: #172033;
+  --c-muted: #5a6478;
+  --c-line: #d8dee7;
+  --c-link: #2450b8;
+  --c-ok: #1d7a4c;
+  --c-bad: #b42335;
+  --c-code-bg: #f6f8fb;
+  --c-code-ink: #1f2a3d;
+  --track: #2450b8;
+  --on-track: #ffffff;
+  color-scheme: light;
+}
+
+:root[data-theme='dark'] {
+  --c-canvas: #0f141d;
+  --c-surface: #161c27;
+  --c-sunken: #1d2431;
+  --c-ink: #e4e8ef;
+  --c-muted: #99a3b5;
+  --c-line: #2a3343;
+  --c-link: #8fb0ff;
+  --c-ok: #4cc58a;
+  --c-bad: #ff7a8a;
+  --c-code-bg: #11161f;
+  --c-code-ink: #d7deea;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --font-sans: 'Onest Variable', 'Onest', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Unbounded Variable', 'Unbounded', 'Onest Variable', ui-sans-serif, sans-serif;
+  --font-mono: 'JetBrains Mono Variable', 'JetBrains Mono', ui-monospace, 'SFMono-Regular', monospace;
+
+  --color-canvas: var(--c-canvas);
+  --color-surface: var(--c-surface);
+  --color-sunken: var(--c-sunken);
+  --color-ink: var(--c-ink);
+  --color-muted: var(--c-muted);
+  --color-line: var(--c-line);
+  --color-link: var(--c-link);
+  --color-ok: var(--c-ok);
+  --color-bad: var(--c-bad);
+  --color-track: var(--track);
+  --color-on-track: var(--on-track);
+}
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    @apply bg-canvas font-sans text-ink;
+    font-size: 16px;
+    line-height: 1.6;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--c-link);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  ::selection {
+    background: color-mix(in srgb, var(--track) 30%, transparent);
+  }
+
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ---------- Lesson typography ---------- */
+
+.prose {
+  max-width: 72ch;
+  font-size: 1.0625rem;
+  line-height: 1.75;
+  color: var(--c-ink);
+}
+
+.prose > div > * + * {
+  margin-top: 1.1em;
+}
+
+.prose h2 {
+  font-family: var(--font-display);
+  font-size: 1.45rem;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  margin-top: 2.4em;
+  padding-top: 0.4em;
+  scroll-margin-top: 88px;
+}
+
+.prose h3 {
+  font-size: 1.18rem;
+  font-weight: 650;
+  line-height: 1.35;
+  margin-top: 1.9em;
+  scroll-margin-top: 88px;
+}
+
+.prose h2 + *,
+.prose h3 + * {
+  margin-top: 0.6em;
+}
+
+.prose p {
+  text-wrap: pretty;
+}
+
+.prose a {
+  color: var(--c-link);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+.prose strong {
+  font-weight: 650;
+}
+
+.prose ul,
+.prose ol {
+  padding-left: 1.4em;
+}
+
+.prose ul {
+  list-style: disc;
+}
+
+.prose ol {
+  list-style: decimal;
+}
+
+.prose li + li {
+  margin-top: 0.35em;
+}
+
+.prose li::marker {
+  color: var(--c-muted);
+}
+
+.prose :not(pre) > code {
+  font-family: var(--font-mono);
+  font-size: 0.86em;
+  padding: 0.12em 0.38em;
+  border-radius: 5px;
+  background: var(--c-sunken);
+  color: var(--c-ink);
+  overflow-wrap: anywhere;
+}
+
+.prose blockquote {
+  border-left: 3px solid var(--c-line);
+  padding-left: 1em;
+  color: var(--c-muted);
+}
+
+.prose hr {
+  border: 0;
+  border-top: 1px solid var(--c-line);
+  margin: 2.5em 0;
+}
+
+.prose .table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--c-line);
+  border-radius: 10px;
+}
+
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.92em;
+  line-height: 1.5;
+}
+
+.prose th,
+.prose td {
+  text-align: left;
+  padding: 0.6em 0.85em;
+  border-bottom: 1px solid var(--c-line);
+  vertical-align: top;
+}
+
+.prose th {
+  background: var(--c-sunken);
+  font-weight: 600;
+}
+
+.prose tr:last-child td {
+  border-bottom: 0;
+}
+
+/* Code blocks */
+.code-block {
+  position: relative;
+  margin-left: 0;
+  margin-right: 0;
+  border: 1px solid var(--c-line);
+  border-radius: 12px;
+  background: var(--c-code-bg);
+  overflow: hidden;
+}
+
+.code-lang {
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  color: var(--c-muted);
+  padding: 0.55em 1em;
+  border-bottom: 1px solid var(--c-line);
+}
+
+.code-block pre {
+  margin: 0;
+  padding: 1em 1.1em;
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: 0.86rem;
+  line-height: 1.65;
+  color: var(--c-code-ink);
+  tab-size: 2;
+}
+
+.code-copy {
+  position: absolute;
+  top: 0.3em;
+  right: 0.5em;
+  font-size: 0.75rem;
+  padding: 0.25em 0.6em;
+  border-radius: 6px;
+  color: var(--c-muted);
+  cursor: pointer;
+  transition: color 150ms ease, background-color 150ms ease;
+}
+
+.code-copy:hover {
+  color: var(--c-ink);
+  background: var(--c-sunken);
+}
+
+/* Callouts */
+.callout {
+  border-radius: 12px;
+  padding: 0.9em 1.15em;
+  border: 1px solid var(--callout-line);
+  background: var(--callout-bg);
+}
+
+.callout > * + * {
+  margin-top: 0.6em;
+}
+
+.callout-title {
+  font-weight: 650;
+  font-size: 0.9em;
+  color: var(--callout-ink);
+}
+
+.callout-tip {
+  --callout-bg: color-mix(in srgb, var(--c-ok) 7%, var(--c-surface));
+  --callout-line: color-mix(in srgb, var(--c-ok) 30%, transparent);
+  --callout-ink: var(--c-ok);
+}
+
+.callout-note {
+  --callout-bg: color-mix(in srgb, var(--c-link) 7%, var(--c-surface));
+  --callout-line: color-mix(in srgb, var(--c-link) 30%, transparent);
+  --callout-ink: var(--c-link);
+}
+
+.callout-warning {
+  --callout-bg: color-mix(in srgb, var(--c-bad) 7%, var(--c-surface));
+  --callout-line: color-mix(in srgb, var(--c-bad) 30%, transparent);
+  --callout-ink: var(--c-bad);
+}
+
+.callout-interview {
+  --callout-bg: color-mix(in srgb, var(--track) 9%, var(--c-surface));
+  --callout-line: color-mix(in srgb, var(--track) 40%, transparent);
+  --callout-ink: var(--c-ink);
+  border-left: 4px solid var(--track);
+}
+
+/* ---------- Syntax highlighting (shared by lessons and the editor) ---------- */
+.hljs-keyword,
+.hljs-built_in,
+.hljs-selector-tag,
+.hljs-meta .hljs-keyword {
+  color: #8839c7;
+}
+.hljs-string,
+.hljs-regexp,
+.hljs-attr .hljs-string {
+  color: #1f7a3e;
+}
+.hljs-number,
+.hljs-literal {
+  color: #b35a00;
+}
+.hljs-title,
+.hljs-title.function_,
+.hljs-section {
+  color: #2450b8;
+}
+.hljs-title.class_,
+.hljs-type {
+  color: #a0006d;
+}
+.hljs-comment,
+.hljs-quote {
+  color: #7b8597;
+  font-style: italic;
+}
+.hljs-attr,
+.hljs-attribute,
+.hljs-variable,
+.hljs-template-variable,
+.hljs-property {
+  color: #0d6b7a;
+}
+.hljs-tag,
+.hljs-name {
+  color: #b42335;
+}
+.hljs-meta,
+.hljs-symbol,
+.hljs-subst {
+  color: #59647a;
+}
+
+[data-theme='dark'] .hljs-keyword,
+[data-theme='dark'] .hljs-built_in,
+[data-theme='dark'] .hljs-selector-tag {
+  color: #c792ea;
+}
+[data-theme='dark'] .hljs-string,
+[data-theme='dark'] .hljs-regexp {
+  color: #a5d6a7;
+}
+[data-theme='dark'] .hljs-number,
+[data-theme='dark'] .hljs-literal {
+  color: #f7b267;
+}
+[data-theme='dark'] .hljs-title,
+[data-theme='dark'] .hljs-title.function_,
+[data-theme='dark'] .hljs-section {
+  color: #82aaff;
+}
+[data-theme='dark'] .hljs-title.class_,
+[data-theme='dark'] .hljs-type {
+  color: #f78fb3;
+}
+[data-theme='dark'] .hljs-comment {
+  color: #6c7891;
+}
+[data-theme='dark'] .hljs-attr,
+[data-theme='dark'] .hljs-attribute,
+[data-theme='dark'] .hljs-variable,
+[data-theme='dark'] .hljs-property {
+  color: #7fdbca;
+}
+[data-theme='dark'] .hljs-tag,
+[data-theme='dark'] .hljs-name {
+  color: #ff8a9a;
+}
+[data-theme='dark'] .hljs-meta,
+[data-theme='dark'] .hljs-subst {
+  color: #9aa6bb;
+}
+
+/* CodeMirror tokens (classHighlighter) reuse the highlight.js palette */
+.tok-keyword,
+.tok-modifier,
+.tok-operatorKeyword,
+.tok-controlKeyword,
+.tok-definitionKeyword {
+  color: #8839c7;
+}
+.tok-string,
+.tok-string2 {
+  color: #1f7a3e;
+}
+.tok-number,
+.tok-bool,
+.tok-atom {
+  color: #b35a00;
+}
+.tok-comment {
+  color: #7b8597;
+  font-style: italic;
+}
+.tok-typeName,
+.tok-className {
+  color: #a0006d;
+}
+.tok-propertyName {
+  color: #0d6b7a;
+}
+.tok-variableName.tok-definition,
+.tok-function {
+  color: #2450b8;
+}
+[data-theme='dark'] .tok-keyword,
+[data-theme='dark'] .tok-modifier,
+[data-theme='dark'] .tok-operatorKeyword,
+[data-theme='dark'] .tok-controlKeyword,
+[data-theme='dark'] .tok-definitionKeyword {
+  color: #c792ea;
+}
+[data-theme='dark'] .tok-string,
+[data-theme='dark'] .tok-string2 {
+  color: #a5d6a7;
+}
+[data-theme='dark'] .tok-number,
+[data-theme='dark'] .tok-bool,
+[data-theme='dark'] .tok-atom {
+  color: #f7b267;
+}
+[data-theme='dark'] .tok-comment {
+  color: #6c7891;
+}
+[data-theme='dark'] .tok-typeName,
+[data-theme='dark'] .tok-className {
+  color: #f78fb3;
+}
+[data-theme='dark'] .tok-propertyName {
+  color: #7fdbca;
+}
+[data-theme='dark'] .tok-variableName.tok-definition,
+[data-theme='dark'] .tok-function {
+  color: #82aaff;
+}

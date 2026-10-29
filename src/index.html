@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <title>DevShelf — учебная платформа фронтенд-разработчика</title>
+    <base href="/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="JavaScript, TypeScript, Angular, RxJS, безопасность, паттерны, архитектура и сборка — теория и практика в одном месте."
+    />
+    <link rel="icon" type="image/x-icon" href="favicon.ico" />
+    <script>
+      // Apply the saved theme before Angular boots to avoid a light flash.
+      try {
+        const saved = JSON.parse(localStorage.getItem('devshelf:theme') || '"system"');
+        const dark = saved === 'dark' || (saved === 'system' && matchMedia('(prefers-color-scheme: dark)').matches);
+        document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+      } catch {}
+    </script>
+  </head>
+  <body>
+    <app-root></app-root>
+  </body>
+</html>

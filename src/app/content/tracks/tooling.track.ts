@@ -1,0 +1,120 @@
+import type { Track } from '../../domain/catalog.model';
+
+export const TOOLING_TRACK = {
+  id: 'tooling',
+  title: 'Сборка и монорепозитории',
+  short: 'Build',
+  description:
+    'Webpack, Vite и esbuild изнутри, почему Angular сменил сборщик, Nx-монорепозитории, Module Federation и Native Federation.',
+  accent: '#6B7F1A',
+  onAccent: '#FFFFFF',
+  status: 'ready',
+  sections: [
+    {
+      id: 'bundlers',
+      title: 'Сборщики',
+      lessons: [
+        {
+          id: 'bundlers-basics',
+          title: 'Зачем нужен сборщик',
+          summary: 'Граф модулей, бандлинг, tree-shaking, code splitting, минификация и source maps.',
+          level: 'basic',
+          minutes: 11,
+          tags: ['bundler', 'tree-shaking', 'code splitting'],
+        },
+        {
+          id: 'webpack',
+          title: 'Webpack',
+          summary: 'Entry, output, loaders, plugins, chunks и почему он медленный на больших проектах.',
+          level: 'middle',
+          minutes: 13,
+          tags: ['webpack', 'loader', 'plugin'],
+        },
+        {
+          id: 'vite',
+          title: 'Vite и esbuild',
+          summary: 'Dev-сервер на нативных ES-модулях, pre-bundling, HMR и Rollup/Rolldown для продакшена.',
+          level: 'middle',
+          minutes: 12,
+          tags: ['Vite', 'esbuild', 'HMR', 'Rollup'],
+        },
+        {
+          id: 'angular-builders',
+          title: 'Почему Angular перешёл на esbuild и Vite',
+          summary: 'История builder-ов, application builder, что выиграли и что потеряли.',
+          level: 'middle',
+          minutes: 10,
+          tags: ['application builder', 'esbuild', 'Vite'],
+        },
+        {
+          id: 'bundlers-comparison',
+          title: 'Webpack, Vite, esbuild, Rspack: сравнение',
+          summary: 'Что выбрать для нового проекта и для легаси.',
+          level: 'middle',
+          minutes: 8,
+          tags: ['comparison', 'Rspack', 'Turbopack'],
+        },
+      ],
+    },
+    {
+      id: 'monorepo',
+      title: 'Монорепозитории',
+      lessons: [
+        {
+          id: 'monorepo-basics',
+          title: 'Монорепозиторий: плюсы и минусы',
+          summary: 'Monorepo против polyrepo, единые версии, атомарные изменения и инструменты.',
+          level: 'basic',
+          minutes: 8,
+          tags: ['monorepo', 'polyrepo'],
+        },
+        {
+          id: 'nx',
+          title: 'Nx: граф проекта, affected и кеш',
+          summary: 'Workspace, проекты и библиотеки, генераторы, executors, affected-команды и remote cache.',
+          level: 'middle',
+          minutes: 14,
+          tags: ['Nx', 'affected', 'cache', 'generators'],
+        },
+        {
+          id: 'nx-boundaries',
+          title: 'Nx: типы библиотек и границы модулей',
+          summary: 'feature/ui/data-access/util, теги и правило enforce-module-boundaries.',
+          level: 'middle',
+          minutes: 10,
+          tags: ['module boundaries', 'tags', 'libraries'],
+        },
+      ],
+    },
+    {
+      id: 'federation',
+      title: 'Федерация модулей',
+      lessons: [
+        {
+          id: 'module-federation',
+          title: 'Module Federation',
+          summary: 'Host и remotes, exposes, shared-зависимости и singleton в Webpack 5.',
+          level: 'advanced',
+          minutes: 14,
+          tags: ['Module Federation', 'webpack', 'remote', 'host'],
+        },
+        {
+          id: 'native-federation',
+          title: 'Native Federation',
+          summary: 'Федерация поверх import maps и ES-модулей, работа с esbuild-сборкой Angular.',
+          level: 'advanced',
+          minutes: 12,
+          tags: ['Native Federation', 'import maps', 'esbuild'],
+        },
+        {
+          id: 'federation-in-practice',
+          title: 'Федерация на практике',
+          summary: 'Версии shared-библиотек, коммуникация между remote, роутинг, деплой и тестирование.',
+          level: 'advanced',
+          minutes: 11,
+          tags: ['versioning', 'shared', 'deployment'],
+        },
+      ],
+    },
+  ],
+} as const satisfies Track;
