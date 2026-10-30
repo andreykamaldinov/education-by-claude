@@ -100,17 +100,25 @@ function effect(fn: () => void): void {
 }
 `,
     tests: [
-      { name: 'signal: чтение, set, update', code: `const count = signal(1);
+      {
+        name: 'signal: чтение, set, update',
+        code: `const count = signal(1);
 count.set(5);
 count.update((n) => n + 1);
-expect(count()).toBe(6);` },
-      { name: 'computed пересчитывается при изменении зависимостей', code: `const a = signal(2);
+expect(count()).toBe(6);`,
+      },
+      {
+        name: 'computed пересчитывается при изменении зависимостей',
+        code: `const a = signal(2);
 const b = signal(3);
 const sum = computed(() => a() + b());
 expect(sum()).toBe(5);
 a.set(10);
-expect(sum()).toBe(13);` },
-      { name: 'computed ленивый и мемоизированный', code: `const source = signal(1);
+expect(sum()).toBe(13);`,
+      },
+      {
+        name: 'computed ленивый и мемоизированный',
+        code: `const source = signal(1);
 const fn = spy(() => source() * 2);
 const doubled = computed(fn);
 expect(fn.calls).toHaveLength(0);
@@ -119,23 +127,33 @@ expect(fn.calls).toHaveLength(1);
 source.set(2);
 expect(fn.calls).toHaveLength(1);
 expect(doubled()).toBe(4);
-expect(fn.calls).toHaveLength(2);` },
-      { name: 'effect реагирует на изменения', code: `const name = signal('Анна');
+expect(fn.calls).toHaveLength(2);`,
+      },
+      {
+        name: 'effect реагирует на изменения',
+        code: `const name = signal('Анна');
 const log = [];
 effect(() => log.push(name()));
 name.set('Олег');
-expect(log).toEqual(['Анна', 'Олег']);` },
-      { name: 'одинаковое значение не уведомляет', code: `const value = signal('x');
+expect(log).toEqual(['Анна', 'Олег']);`,
+      },
+      {
+        name: 'одинаковое значение не уведомляет',
+        code: `const value = signal('x');
 const runs = spy();
 effect(() => { value(); runs(); });
 value.set('x');
-expect(runs.calls).toHaveLength(1);` },
-      { name: 'effect через цепочку computed', code: `const price = signal(100);
+expect(runs.calls).toHaveLength(1);`,
+      },
+      {
+        name: 'effect через цепочку computed',
+        code: `const price = signal(100);
 const withTax = computed(() => price() * 1.2);
 const seen = [];
 effect(() => seen.push(withTax()));
 price.set(200);
-expect(seen).toEqual([120, 240]);` },
+expect(seen).toEqual([120, 240]);`,
+      },
     ],
     hints: [
       'Держите глобальную переменную «текущий потребитель»: computed и effect ставят себя туда на время выполнения функции.',
@@ -179,18 +197,30 @@ expect(seen).toEqual([120, 240]);` },
 }
 `,
     tests: [
-      { name: 'байты', code: `const pipe = new FileSizePipe();
+      {
+        name: 'байты',
+        code: `const pipe = new FileSizePipe();
 expect(pipe.transform(512)).toBe('512 Б');
-expect(pipe.transform(0)).toBe('0 Б');` },
-      { name: 'килобайты и мегабайты', code: `const pipe = new FileSizePipe();
+expect(pipe.transform(0)).toBe('0 Б');`,
+      },
+      {
+        name: 'килобайты и мегабайты',
+        code: `const pipe = new FileSizePipe();
 expect(pipe.transform(1024)).toBe('1.0 КБ');
 expect(pipe.transform(1536, 2)).toBe('1.50 КБ');
-expect(pipe.transform(5 * 1024 * 1024)).toBe('5.0 МБ');` },
-      { name: 'граница единиц', code: `expect(new FileSizePipe().transform(1024 ** 5)).toBe('1024.0 ТБ');` },
-      { name: 'некорректный ввод', code: `const pipe = new FileSizePipe();
+expect(pipe.transform(5 * 1024 * 1024)).toBe('5.0 МБ');`,
+      },
+      {
+        name: 'граница единиц',
+        code: `expect(new FileSizePipe().transform(1024 ** 5)).toBe('1024.0 ТБ');`,
+      },
+      {
+        name: 'некорректный ввод',
+        code: `const pipe = new FileSizePipe();
 expect(pipe.transform(null)).toBe('—');
 expect(pipe.transform(undefined)).toBe('—');
-expect(pipe.transform(-1)).toBe('—');` },
+expect(pipe.transform(-1)).toBe('—');`,
+      },
     ],
     hints: ['Делите на 1024, пока значение ≥ 1024 и есть следующая единица.'],
   },
@@ -209,8 +239,9 @@ expect(pipe.transform(-1)).toBe('—');` },
 - исходный запрос не мутируется (только \`clone\`).`,
     starter: `class HttpRequest {
   constructor(
+  readonly headers: Readonly<Record<string, string>> = {},
     readonly url: string,
-    readonly headers: Readonly<Record<string, string>> = {},
+
   ) {}
 
   clone(update: { setHeaders?: Record<string, string> }): HttpRequest {
@@ -251,22 +282,33 @@ function createAuthInterceptor(getToken: () => string | null, apiUrl: string): I
 }
 `,
     tests: [
-      { name: 'добавляет токен своему API', code: `const interceptor = createAuthInterceptor(() => 't0k', 'https://api.shop.ru');
+      {
+        name: 'добавляет токен своему API',
+        code: `const interceptor = createAuthInterceptor(() => 't0k', 'https://api.shop.ru');
 const sent = [];
 interceptor(new HttpRequest('https://api.shop.ru/orders'), (r) => sent.push(r));
-expect(sent[0].headers.Authorization).toBe('Bearer t0k');` },
-      { name: 'не отправляет токен чужим доменам', code: `const interceptor = createAuthInterceptor(() => 't0k', 'https://api.shop.ru');
+expect(sent[0].headers.Authorization).toBe('Bearer t0k');`,
+      },
+      {
+        name: 'не отправляет токен чужим доменам',
+        code: `const interceptor = createAuthInterceptor(() => 't0k', 'https://api.shop.ru');
 const sent = [];
 interceptor(new HttpRequest('https://cdn.other.com/a.js'), (r) => sent.push(r));
 interceptor(new HttpRequest('https://api.shop.ru.evil.com/steal'), (r) => sent.push(r));
 expect(sent[0].headers.Authorization).toBeUndefined();
-expect(sent[1].headers.Authorization).toBeUndefined();` },
-      { name: 'без токена запрос не меняется', code: `const interceptor = createAuthInterceptor(() => null, 'https://api.shop.ru');
+expect(sent[1].headers.Authorization).toBeUndefined();`,
+      },
+      {
+        name: 'без токена запрос не меняется',
+        code: `const interceptor = createAuthInterceptor(() => null, 'https://api.shop.ru');
 const original = new HttpRequest('https://api.shop.ru/me');
 let sent;
 interceptor(original, (r) => { sent = r; });
-expect(sent).toBe(original);` },
-      { name: 'не мутирует запрос и не перезаписывает заголовок', code: `const interceptor = createAuthInterceptor(() => 'new', 'https://api.shop.ru');
+expect(sent).toBe(original);`,
+      },
+      {
+        name: 'не мутирует запрос и не перезаписывает заголовок',
+        code: `const interceptor = createAuthInterceptor(() => 'new', 'https://api.shop.ru');
 const original = new HttpRequest('https://api.shop.ru/x');
 let sent;
 interceptor(original, (r) => { sent = r; });
@@ -274,7 +316,8 @@ expect(original.headers.Authorization).toBeUndefined();
 expect(sent).not.toBe(original);
 const preset = new HttpRequest('https://api.shop.ru/x', { Authorization: 'Basic abc' });
 interceptor(preset, (r) => { sent = r; });
-expect(sent.headers.Authorization).toBe('Basic abc');` },
+expect(sent.headers.Authorization).toBe('Basic abc');`,
+      },
     ],
     hints: [
       'Проверка startsWith(apiUrl) без завершающего слеша пропустит https://api.shop.ru.evil.com — сравнивайте с apiUrl + "/".',
@@ -361,7 +404,9 @@ class Injector {
 }
 `,
     tests: [
-      { name: 'useValue и useClass с deps', code: `const API_URL = new InjectionToken('API_URL');
+      {
+        name: 'useValue и useClass с deps',
+        code: `const API_URL = new InjectionToken('API_URL');
 class Http {}
 class UserService { constructor(http, url) { this.http = http; this.url = url; } }
 const injector = new Injector([
@@ -371,29 +416,42 @@ const injector = new Injector([
 ]);
 const users = injector.get(UserService);
 expect(users.url).toBe('/api');
-expect(users.http).toBeInstanceOf(Http);` },
-      { name: 'один экземпляр на инжектор', code: `class Store {}
+expect(users.http).toBeInstanceOf(Http);`,
+      },
+      {
+        name: 'один экземпляр на инжектор',
+        code: `class Store {}
 const injector = new Injector([{ provide: Store, useClass: Store }]);
-expect(injector.get(Store)).toBe(injector.get(Store));` },
-      { name: 'useFactory', code: `const NOW = new InjectionToken('NOW');
+expect(injector.get(Store)).toBe(injector.get(Store));`,
+      },
+      {
+        name: 'useFactory',
+        code: `const NOW = new InjectionToken('NOW');
 class Clock { now() { return 42; } }
 const injector = new Injector([
   { provide: Clock, useClass: Clock },
   { provide: NOW, useFactory: (clock) => clock.now(), deps: [Clock] },
 ]);
-expect(injector.get(NOW)).toBe(42);` },
-      { name: 'поиск в родителе и переопределение', code: `const THEME = new InjectionToken('THEME');
+expect(injector.get(NOW)).toBe(42);`,
+      },
+      {
+        name: 'поиск в родителе и переопределение',
+        code: `const THEME = new InjectionToken('THEME');
 const LOCALE = new InjectionToken('LOCALE');
 const root = new Injector([{ provide: THEME, useValue: 'light' }, { provide: LOCALE, useValue: 'ru' }]);
 const child = new Injector([{ provide: THEME, useValue: 'dark' }], root);
 expect(child.get(THEME)).toBe('dark');
 expect(child.get(LOCALE)).toBe('ru');
-expect(root.get(THEME)).toBe('light');` },
-      { name: 'ошибка без провайдера', code: `class Missing {}
+expect(root.get(THEME)).toBe('light');`,
+      },
+      {
+        name: 'ошибка без провайдера',
+        code: `class Missing {}
 const TOKEN = new InjectionToken('PAYMENT_GATEWAY');
 const injector = new Injector([], new Injector([]));
 expect(() => injector.get(Missing)).toThrow('No provider for Missing');
-expect(() => injector.get(TOKEN)).toThrow('No provider for PAYMENT_GATEWAY');` },
+expect(() => injector.get(TOKEN)).toThrow('No provider for PAYMENT_GATEWAY');`,
+      },
     ],
     hints: [
       'Две Map: токен → провайдер и токен → созданный экземпляр.',
@@ -441,15 +499,30 @@ function matchRoute(pattern: string, url: string): Record<string, string> | null
 }
 `,
     tests: [
-      { name: 'параметры', code: `expect(matchRoute('users/:id/orders/:orderId', '/users/1/orders/7')).toEqual({ id: '1', orderId: '7' });` },
-      { name: 'статический маршрут', code: `expect(matchRoute('/settings', '/settings/')).toEqual({});
-expect(matchRoute('/settings', '/profile')).toBeNull();` },
-      { name: 'разное число сегментов', code: `expect(matchRoute('users/:id', '/users')).toBeNull();
-expect(matchRoute('users/:id', '/users/1/edit')).toBeNull();` },
-      { name: 'wildcard, query и декодирование', code: `expect(matchRoute('**', '/что/угодно')).toEqual({});
-expect(matchRoute('search/:q', '/search/angular%20signals?page=2')).toEqual({ q: 'angular signals' });` },
+      {
+        name: 'параметры',
+        code: `expect(matchRoute('users/:id/orders/:orderId', '/users/1/orders/7')).toEqual({ id: '1', orderId: '7' });`,
+      },
+      {
+        name: 'статический маршрут',
+        code: `expect(matchRoute('/settings', '/settings/')).toEqual({});
+expect(matchRoute('/settings', '/profile')).toBeNull();`,
+      },
+      {
+        name: 'разное число сегментов',
+        code: `expect(matchRoute('users/:id', '/users')).toBeNull();
+expect(matchRoute('users/:id', '/users/1/edit')).toBeNull();`,
+      },
+      {
+        name: 'wildcard, query и декодирование',
+        code: `expect(matchRoute('**', '/что/угодно')).toEqual({});
+expect(matchRoute('search/:q', '/search/angular%20signals?page=2')).toEqual({ q: 'angular signals' });`,
+      },
     ],
-    hints: ['Разбейте обе строки на сегменты: split("/").filter(Boolean).', 'Сегмент, начинающийся с «:», — параметр.'],
+    hints: [
+      'Разбейте обе строки на сегменты: split("/").filter(Boolean).',
+      'Сегмент, начинающийся с «:», — параметр.',
+    ],
   },
   {
     id: 'ng-validators',
@@ -516,24 +589,42 @@ const fieldsMatch =
   };
 `,
     tests: [
-      { name: 'required', code: `expect(required({ value: '' })).toEqual({ required: true });
+      {
+        name: 'required',
+        code: `expect(required({ value: '' })).toEqual({ required: true });
 expect(required({ value: [] })).toEqual({ required: true });
 expect(required({ value: 0 })).toBeNull();
-expect(required({ value: 'a' })).toBeNull();` },
-      { name: 'minLength', code: `expect(minLength(3)({ value: 'ab' })).toEqual({ minlength: { requiredLength: 3, actualLength: 2 } });
+expect(required({ value: 'a' })).toBeNull();`,
+      },
+      {
+        name: 'minLength',
+        code: `expect(minLength(3)({ value: 'ab' })).toEqual({ minlength: { requiredLength: 3, actualLength: 2 } });
 expect(minLength(3)({ value: 'abc' })).toBeNull();
-expect(minLength(3)({ value: '' })).toBeNull();` },
-      { name: 'passwordStrength', code: `expect(passwordStrength({ value: 'short' })).toEqual({ weakPassword: { missing: ['digit', 'uppercase', 'length'] } });
-expect(passwordStrength({ value: 'Пароль2026' })).toBeNull();` },
-      { name: 'compose объединяет ошибки', code: `const v = compose(required, minLength(5));
+expect(minLength(3)({ value: '' })).toBeNull();`,
+      },
+      {
+        name: 'passwordStrength',
+        code: `expect(passwordStrength({ value: 'short' })).toEqual({ weakPassword: { missing: ['digit', 'uppercase', 'length'] } });
+expect(passwordStrength({ value: 'Пароль2026' })).toBeNull();`,
+      },
+      {
+        name: 'compose объединяет ошибки',
+        code: `const v = compose(required, minLength(5));
 expect(v({ value: '' })).toEqual({ required: true });
 expect(v({ value: 'abc' })).toEqual({ minlength: { requiredLength: 5, actualLength: 3 } });
-expect(v({ value: 'abcdef' })).toBeNull();` },
-      { name: 'fieldsMatch', code: `const v = fieldsMatch('password', 'confirm');
+expect(v({ value: 'abcdef' })).toBeNull();`,
+      },
+      {
+        name: 'fieldsMatch',
+        code: `const v = fieldsMatch('password', 'confirm');
 expect(v({ value: { password: 'a', confirm: 'b' } })).toEqual({ fieldsMismatch: true });
-expect(v({ value: { password: 'a', confirm: 'a' } })).toBeNull();` },
+expect(v({ value: { password: 'a', confirm: 'a' } })).toBeNull();`,
+      },
     ],
-    hints: ['Пустое значение для minLength — не ошибка: так валидаторы Angular не дублируют required.', 'compose: reduce по валидаторам со spread результатов.'],
+    hints: [
+      'Пустое значение для minLength — не ошибка: так валидаторы Angular не дублируют required.',
+      'compose: reduce по валидаторам со spread результатов.',
+    ],
   },
   {
     id: 'ng-track-diff',
@@ -588,20 +679,35 @@ function diffByKey<T>(prev: readonly T[], next: readonly T[], key: (item: T) => 
 }
 `,
     tests: [
-      { name: 'добавление и удаление', code: `const prev = [{ id: 'a' }, { id: 'b' }, { id: 'c' }];
+      {
+        name: 'добавление и удаление',
+        code: `const prev = [{ id: 'a' }, { id: 'b' }, { id: 'c' }];
 const next = [{ id: 'a' }, { id: 'c' }, { id: 'd' }];
-expect(diffByKey(prev, next, (x) => x.id)).toEqual({ added: ['d'], removed: ['b'], moved: [], kept: ['a', 'c'] });` },
-      { name: 'перемещение в начало', code: `const ids = (list) => list.map((id) => ({ id }));
+expect(diffByKey(prev, next, (x) => x.id)).toEqual({ added: ['d'], removed: ['b'], moved: [], kept: ['a', 'c'] });`,
+      },
+      {
+        name: 'перемещение в начало',
+        code: `const ids = (list) => list.map((id) => ({ id }));
 const diff = diffByKey(ids(['a', 'b', 'c', 'd']), ids(['d', 'a', 'b', 'c']), (x) => x.id);
 expect(diff.kept).toEqual(['d']);
-expect(diff.moved).toEqual(['a', 'b', 'c']);` },
-      { name: 'новые объекты с теми же ключами не пересоздаются', code: `const prev = [{ id: '1', v: 1 }, { id: '2', v: 1 }];
+expect(diff.moved).toEqual(['a', 'b', 'c']);`,
+      },
+      {
+        name: 'новые объекты с теми же ключами не пересоздаются',
+        code: `const prev = [{ id: '1', v: 1 }, { id: '2', v: 1 }];
 const next = [{ id: '1', v: 2 }, { id: '2', v: 2 }];
-expect(diffByKey(prev, next, (x) => x.id)).toEqual({ added: [], removed: [], moved: [], kept: ['1', '2'] });` },
-      { name: 'пустые списки', code: `expect(diffByKey([], [{ id: 'x' }], (x) => x.id).added).toEqual(['x']);
-expect(diffByKey([{ id: 'x' }], [], (x) => x.id).removed).toEqual(['x']);` },
+expect(diffByKey(prev, next, (x) => x.id)).toEqual({ added: [], removed: [], moved: [], kept: ['1', '2'] });`,
+      },
+      {
+        name: 'пустые списки',
+        code: `expect(diffByKey([], [{ id: 'x' }], (x) => x.id).added).toEqual(['x']);
+expect(diffByKey([{ id: 'x' }], [], (x) => x.id).removed).toEqual(['x']);`,
+      },
     ],
-    hints: ['Постройте Map «ключ → старый индекс».', 'Идите по новому списку и сравнивайте старый индекс с последним «оставленным на месте».'],
+    hints: [
+      'Постройте Map «ключ → старый индекс».',
+      'Идите по новому списку и сравнивайте старый индекс с последним «оставленным на месте».',
+    ],
   },
   {
     id: 'ng-memo-selector',
@@ -649,26 +755,41 @@ function createSelector(...args: Array<(...values: any[]) => any>): Selector<any
 }
 `,
     tests: [
-      { name: 'вычисляет значение', code: `const selectTotal = createSelector((s) => s.items, (s) => s.rate, (items, rate) => items.reduce((a, b) => a + b, 0) * rate);
-expect(selectTotal({ items: [1, 2, 3], rate: 2 })).toBe(12);` },
-      { name: 'кеширует при тех же входах', code: `const projector = spy((items) => items.map((x) => x * 2));
+      {
+        name: 'вычисляет значение',
+        code: `const selectTotal = createSelector((s) => s.items, (s) => s.rate, (items, rate) => items.reduce((a, b) => a + b, 0) * rate);
+expect(selectTotal({ items: [1, 2, 3], rate: 2 })).toBe(12);`,
+      },
+      {
+        name: 'кеширует при тех же входах',
+        code: `const projector = spy((items) => items.map((x) => x * 2));
 const select = createSelector((s) => s.items, projector);
 const items = [1, 2];
 const a = select({ items, other: 1 });
 const b = select({ items, other: 2 });
 expect(a).toBe(b);
-expect(projector.calls).toHaveLength(1);` },
-      { name: 'пересчитывает при новой ссылке', code: `const projector = spy((items) => items.length);
+expect(projector.calls).toHaveLength(1);`,
+      },
+      {
+        name: 'пересчитывает при новой ссылке',
+        code: `const projector = spy((items) => items.length);
 const select = createSelector((s) => s.items, projector);
 select({ items: [1] });
 select({ items: [1] });
-expect(projector.calls).toHaveLength(2);` },
-      { name: 'мутация не видна (поэтому нужна иммутабельность)', code: `const select = createSelector((s) => s.items, (items) => items.length);
+expect(projector.calls).toHaveLength(2);`,
+      },
+      {
+        name: 'мутация не видна (поэтому нужна иммутабельность)',
+        code: `const select = createSelector((s) => s.items, (items) => items.length);
 const state = { items: [1] };
 expect(select(state)).toBe(1);
 state.items.push(2);
-expect(select(state)).toBe(1);` },
+expect(select(state)).toBe(1);`,
+      },
     ],
-    hints: ['Последний аргумент — projector, остальные — входные селекторы.', 'Сохраняйте массив прошлых входных значений и сравнивайте поэлементно через Object.is.'],
+    hints: [
+      'Последний аргумент — projector, остальные — входные селекторы.',
+      'Сохраняйте массив прошлых входных значений и сравнивайте поэлементно через Object.is.',
+    ],
   },
 ] as const satisfies readonly Exercise[];
