@@ -1,0 +1,63 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One deployment at a time; a newer push cancels the older one still in progress.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - name: Check content and run unit tests
+        run: |
+          npm run verify:content
+          npx ng test --watch=false
+
+      - name: Build with the repository sub-path as base href
+        run: |
+          REPO="${{ github.event.repository.name }}"
+          # user.github.io repositories are served from the domain root, all others from /<repo>/
+          if [[ "$REPO" == *.github.io ]]; then BASE_HREF="/"; else BASE_HREF="/$REPO/"; fi
+          npx ng build --base-href "$BASE_HREF"
+
+      - name: Add SPA fallback
+        run: |
+          # GitHub Pages has no rewrites: unknown paths serve 404.html, so it must boot the app too.
+          cp dist/education/browser/index.html dist/education/browser/404.html
+          touch dist/education/browser/.nojekyll
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: dist/education/browser
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

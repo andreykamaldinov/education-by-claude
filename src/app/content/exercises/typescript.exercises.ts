@@ -644,4 +644,465 @@ expect(Object.isFrozen(m)).toBe(true);` },
     ],
     hints: ['Храните целые копейки: Math.round(amount * 100).', 'В allocate остаток от деления раздайте по одной копейке первым частям.'],
   },
+  {
+    id: 'ts-static-counter',
+    trackId: 'typescript',
+    title: 'Счётчик экземпляров на static',
+    level: 'basic',
+    language: 'typescript',
+    relatedLessonId: 'classes',
+    description: `Реализуйте класс \`User\`, который сам ведёт учёт своих экземпляров через \`static\`-члены.
+
+- \`new User(name)\` присваивает экземпляру \`readonly id\` по порядку: 1, 2, 3…
+- \`static create(name)\` — фабрика: обрезает пробелы, для пустого имени бросает \`Error('Имя обязательно')\`.
+- \`static get count\` — сколько экземпляров создано.
+- \`static reset()\` — сбрасывает счётчики (нужно тестам).
+- Наследник \`class Admin extends User {}\` должен работать без изменений: \`Admin.create('Ира')\` возвращает именно \`Admin\`, а не \`User\`.
+
+~~~ts
+User.create('  Анна ').name; // 'Анна'
+User.count; // 1
+new User('Олег').count; // undefined — static не виден через экземпляр
+~~~
+
+Подсказка к последнему пункту: внутри static-метода \`this\` — это конструктор, через который метод вызвали.`,
+    starter: `class User {
+  readonly id: number;
+
+  constructor(readonly name: string) {
+    this.id = 0;
+  }
+
+  static create(name: string): User {
+    throw new Error('не реализовано');
+  }
+
+  static get count(): number {
+    return 0;
+  }
+
+  static reset(): void {}
+}
+
+class Admin extends User {}
+`,
+    solution: `class User {
+  private static nextId = 1;
+  private static created = 0;
+
+  readonly id: number;
+
+  constructor(readonly name: string) {
+    this.id = User.nextId++;
+    User.created++;
+  }
+
+  static create<T extends User>(this: new (name: string) => T, name: string): T {
+    const trimmed = name.trim();
+    if (trimmed === '') {
+      throw new Error('Имя обязательно');
+    }
+    return new this(trimmed);
+  }
+
+  static get count(): number {
+    return User.created;
+  }
+
+  static reset(): void {
+    User.nextId = 1;
+    User.created = 0;
+  }
+}
+
+class Admin extends User {}
+`,
+    tests: [
+      { name: 'id выдаются по порядку', code: `User.reset();
+const a = new User('a');
+const b = new User('b');
+expect([a.id, b.id]).toEqual([1, 2]);` },
+      { name: 'count считает экземпляры', code: `User.reset();
+User.create('a');
+new User('b');
+expect(User.count).toBe(2);` },
+      { name: 'фабрика обрезает пробелы и проверяет имя', code: `User.reset();
+expect(User.create('  Анна ').name).toBe('Анна');
+expect(() => User.create('   ')).toThrow('Имя обязательно');` },
+      { name: 'static не виден через экземпляр', code: `User.reset();
+const user = new User('x');
+expect(user.count).toBeUndefined();
+expect(user.create).toBeUndefined();` },
+      { name: 'фабрика наследника создаёт наследника', code: `User.reset();
+const admin = Admin.create('Ира');
+expect(admin).toBeInstanceOf(Admin);
+expect(admin.id).toBe(1);
+expect(User.count).toBe(1);` },
+      { name: 'reset сбрасывает счётчики', code: `User.reset();
+new User('a');
+User.reset();
+expect(User.count).toBe(0);
+expect(new User('b').id).toBe(1);` },
+    ],
+    hints: [
+      'Храните счётчики в private static полях и обращайтесь к ним через User.nextId, а не через this — иначе у Admin появятся свои копии.',
+      'Для полиморфной фабрики объявите параметр this: static create<T extends User>(this: new (name: string) => T, name: string): T и вызовите new this(...).',
+    ],
+  },
+  {
+    id: 'ts-private-account',
+    trackId: 'typescript',
+    title: 'Банковский счёт с #private',
+    level: 'basic',
+    language: 'typescript',
+    relatedLessonId: 'classes',
+    description: `Модификатор \`private\` из TypeScript исчезает после компиляции: поле видно в \`JSON.stringify\` и меняется снаружи. Сделайте счёт, у которого баланс защищён по-настоящему — через \`#private\`.
+
+Класс \`BankAccount\`:
+
+- \`constructor(readonly owner: string, initial = 0)\`;
+- \`get balance\` — только для чтения, сеттера нет;
+- \`deposit(amount)\` и \`withdraw(amount)\` — для суммы ≤ 0 бросают \`RangeError('Сумма должна быть положительной')\`, при нехватке денег \`withdraw\` бросает \`Error('Недостаточно средств')\`;
+- \`get history\` — массив операций (\`+100\`, \`-30\` как числа 100 и -30); снаружи изменить историю нельзя — возвращайте копию;
+- \`static isAccount(value)\` — проверка через \`#balance in value\`.
+
+В итоге \`JSON.stringify(account)\` должен давать только \`{"owner":"…"}\`.`,
+    starter: `class BankAccount {
+  balance: number;
+  history: number[] = [];
+
+  constructor(readonly owner: string, initial = 0) {
+    this.balance = initial;
+  }
+
+  deposit(amount: number): void {
+    this.balance += amount;
+  }
+
+  withdraw(amount: number): void {
+    this.balance -= amount;
+  }
+
+  static isAccount(value: object): boolean {
+    return 'balance' in value;
+  }
+}
+`,
+    solution: `class BankAccount {
+  #balance: number;
+  readonly #history: number[] = [];
+
+  constructor(readonly owner: string, initial = 0) {
+    this.#balance = initial;
+  }
+
+  get balance(): number {
+    return this.#balance;
+  }
+
+  get history(): readonly number[] {
+    return [...this.#history];
+  }
+
+  deposit(amount: number): void {
+    this.#assertPositive(amount);
+    this.#balance += amount;
+    this.#history.push(amount);
+  }
+
+  withdraw(amount: number): void {
+    this.#assertPositive(amount);
+    if (amount > this.#balance) {
+      throw new Error('Недостаточно средств');
+    }
+    this.#balance -= amount;
+    this.#history.push(-amount);
+  }
+
+  #assertPositive(amount: number): void {
+    if (!(amount > 0)) {
+      throw new RangeError('Сумма должна быть положительной');
+    }
+  }
+
+  static isAccount(value: object): value is BankAccount {
+    return #balance in value;
+  }
+}
+`,
+    tests: [
+      { name: 'пополнение и списание', code: `const account = new BankAccount('Анна', 100);
+account.deposit(50);
+account.withdraw(30);
+expect(account.balance).toBe(120);
+expect(account.history).toEqual([50, -30]);` },
+      { name: 'ошибки валидации', code: `const account = new BankAccount('Анна', 10);
+expect(() => account.deposit(0)).toThrow('положительной');
+expect(() => account.withdraw(-5)).toThrow('положительной');
+expect(() => account.withdraw(11)).toThrow('Недостаточно средств');
+expect(account.balance).toBe(10);` },
+      { name: 'баланс нельзя присвоить снаружи', code: `const account = new BankAccount('Анна', 10);
+expect(() => { account.balance = 1000; }).toThrow();
+expect(account.balance).toBe(10);` },
+      { name: 'баланс не утекает в JSON и Object.keys', code: `const account = new BankAccount('Анна', 10);
+expect(JSON.stringify(account)).toBe('{"owner":"Анна"}');
+expect(Object.keys(account)).toEqual(['owner']);` },
+      { name: 'история защищена от изменений', code: `const account = new BankAccount('Анна');
+account.deposit(5);
+account.history.push(1000);
+expect(account.history).toEqual([5]);` },
+      { name: 'brand check', code: `expect(BankAccount.isAccount(new BankAccount('x'))).toBe(true);
+expect(BankAccount.isAccount({ balance: 1, owner: 'x' })).toBe(false);` },
+    ],
+    hints: [
+      'Объявите #balance и #history и дайте к ним только геттеры — присваивание свойству без сеттера в strict mode бросает TypeError.',
+      'Повторяющуюся проверку суммы вынесите в приватный метод #assertPositive.',
+    ],
+  },
+  {
+    id: 'ts-abstract-shapes',
+    trackId: 'typescript',
+    title: 'Абстрактные фигуры и protected',
+    level: 'middle',
+    language: 'typescript',
+    relatedLessonId: 'classes',
+    description: `Постройте иерархию фигур на абстрактном классе — это паттерн «шаблонный метод».
+
+~~~ts
+abstract class Shape {
+  constructor(readonly name: string) {}
+  abstract area(): number;
+  abstract perimeter(): number;
+  describe(): string; // 'круг: S=3.14, P=6.28' — два знака после запятой
+  static compareByArea(a: Shape, b: Shape): number; // для sort по возрастанию площади
+}
+~~~
+
+Наследники:
+
+- \`Circle(radius)\` — имя \`'круг'\`;
+- \`Rectangle(width, height)\` — имя \`'прямоугольник'\`, стороны храните в \`protected readonly\` полях;
+- \`Square(side) extends Rectangle\` — имя \`'квадрат'\`. Подумайте, как передать имя через конструктор \`Rectangle\`, не делая его публичным параметром.
+
+\`abstract\` защищает только при компиляции. Добавьте рантайм-проверку: \`new Shape('x')\` (например, из JavaScript) должен бросать \`TypeError\`. Используйте \`new.target\`.`,
+    starter: `abstract class Shape {
+  constructor(readonly name: string) {}
+
+  abstract area(): number;
+  abstract perimeter(): number;
+
+  describe(): string {
+    return this.name;
+  }
+
+  static compareByArea(a: Shape, b: Shape): number {
+    return 0;
+  }
+}
+
+class Circle extends Shape {
+  constructor(readonly radius: number) {
+    super('круг');
+  }
+  area(): number {
+    return 0;
+  }
+  perimeter(): number {
+    return 0;
+  }
+}
+
+class Rectangle extends Shape {
+  constructor(width: number, height: number) {
+    super('прямоугольник');
+  }
+  area(): number {
+    return 0;
+  }
+  perimeter(): number {
+    return 0;
+  }
+}
+
+class Square extends Rectangle {}
+`,
+    solution: `abstract class Shape {
+  constructor(readonly name: string) {
+    if (new.target === Shape) {
+      throw new TypeError('Shape — абстрактный класс');
+    }
+  }
+
+  abstract area(): number;
+  abstract perimeter(): number;
+
+  describe(): string {
+    return this.name + ': S=' + this.area().toFixed(2) + ', P=' + this.perimeter().toFixed(2);
+  }
+
+  static compareByArea(a: Shape, b: Shape): number {
+    return a.area() - b.area();
+  }
+}
+
+class Circle extends Shape {
+  constructor(private readonly radius: number) {
+    super('круг');
+  }
+
+  override area(): number {
+    return Math.PI * this.radius ** 2;
+  }
+
+  override perimeter(): number {
+    return 2 * Math.PI * this.radius;
+  }
+}
+
+class Rectangle extends Shape {
+  constructor(
+    protected readonly width: number,
+    protected readonly height: number,
+    name = 'прямоугольник',
+  ) {
+    super(name);
+  }
+
+  override area(): number {
+    return this.width * this.height;
+  }
+
+  override perimeter(): number {
+    return 2 * (this.width + this.height);
+  }
+}
+
+class Square extends Rectangle {
+  constructor(side: number) {
+    super(side, side, 'квадрат');
+  }
+}
+`,
+    tests: [
+      { name: 'describe у круга', code: `expect(new Circle(1).describe()).toBe('круг: S=3.14, P=6.28');` },
+      { name: 'прямоугольник', code: `const rect = new Rectangle(2, 3);
+expect(rect.area()).toBe(6);
+expect(rect.describe()).toBe('прямоугольник: S=6.00, P=10.00');` },
+      { name: 'квадрат наследует прямоугольник', code: `const square = new Square(4);
+expect(square.describe()).toBe('квадрат: S=16.00, P=16.00');
+expect(square).toBeInstanceOf(Rectangle);
+expect(square).toBeInstanceOf(Shape);` },
+      { name: 'сортировка по площади', code: `const shapes = [new Square(3), new Circle(1), new Rectangle(1, 2)];
+expect(shapes.sort(Shape.compareByArea).map((s) => s.name)).toEqual(['прямоугольник', 'круг', 'квадрат']);` },
+      { name: 'абстрактный класс нельзя создать в рантайме', code: `expect(() => new Shape('x')).toThrow();
+expect(() => new Circle(1)).not.toThrow();` },
+    ],
+    hints: [
+      'new.target внутри конструктора — это класс, к которому применили new. Для new Circle() это Circle, для new Shape() — Shape.',
+      'Добавьте в Rectangle третий параметр name со значением по умолчанию и передайте его в super(name). Square вызовет super(side, side, \'квадрат\').',
+    ],
+  },
+  {
+    id: 'ts-singleton-config',
+    trackId: 'typescript',
+    title: 'Singleton с приватным конструктором',
+    level: 'middle',
+    language: 'typescript',
+    relatedLessonId: 'classes',
+    description: `Сделайте класс конфигурации \`AppConfig\`, у которого может быть только один экземпляр.
+
+- \`private constructor\` — запрещает \`new AppConfig()\` при компиляции;
+- \`static get instance\` — лениво создаёт и всегда возвращает один и тот же экземпляр;
+- \`set(key, value)\` возвращает \`this\`, чтобы вызовы можно было цепочкой;
+- \`get(key, fallback?)\` — значение или \`fallback\` (по умолчанию \`undefined\`);
+- \`static resetForTests()\` — забывает текущий экземпляр.
+
+Модификатор \`private\` у конструктора в JavaScript исчезает. Добавьте рантайм-защиту: вызов \`new AppConfig()\` снаружи должен бросать \`Error('Используйте AppConfig.instance')\`. Подойдёт приватное статическое поле-флаг, которое поднимается только внутри \`instance\`.`,
+    starter: `class AppConfig {
+  private values = new Map<string, unknown>();
+
+  constructor() {}
+
+  static get instance(): AppConfig {
+    return new AppConfig();
+  }
+
+  set(key: string, value: unknown): this {
+    this.values.set(key, value);
+    return this;
+  }
+
+  get(key: string, fallback?: unknown): unknown {
+    return this.values.get(key);
+  }
+
+  static resetForTests(): void {}
+}
+`,
+    solution: `class AppConfig {
+  static #instance: AppConfig | undefined;
+  static #creating = false;
+
+  readonly #values = new Map<string, unknown>();
+
+  private constructor() {
+    if (!AppConfig.#creating) {
+      throw new Error('Используйте AppConfig.instance');
+    }
+  }
+
+  static get instance(): AppConfig {
+    if (!AppConfig.#instance) {
+      AppConfig.#creating = true;
+      try {
+        AppConfig.#instance = new AppConfig();
+      } finally {
+        AppConfig.#creating = false;
+      }
+    }
+    return AppConfig.#instance;
+  }
+
+  set(key: string, value: unknown): this {
+    this.#values.set(key, value);
+    return this;
+  }
+
+  get(key: string, fallback?: unknown): unknown {
+    return this.#values.has(key) ? this.#values.get(key) : fallback;
+  }
+
+  static resetForTests(): void {
+    AppConfig.#instance = undefined;
+  }
+}
+`,
+    tests: [
+      { name: 'один и тот же экземпляр', code: `AppConfig.resetForTests();
+expect(AppConfig.instance).toBe(AppConfig.instance);` },
+      { name: 'состояние общее', code: `AppConfig.resetForTests();
+AppConfig.instance.set('apiUrl', '/api').set('retries', 3);
+expect(AppConfig.instance.get('apiUrl')).toBe('/api');
+expect(AppConfig.instance.get('retries')).toBe(3);` },
+      { name: 'fallback', code: `AppConfig.resetForTests();
+expect(AppConfig.instance.get('missing', 42)).toBe(42);
+expect(AppConfig.instance.get('missing')).toBeUndefined();
+AppConfig.instance.set('zero', 0);
+expect(AppConfig.instance.get('zero', 5)).toBe(0);` },
+      { name: 'new снаружи запрещён в рантайме', code: `AppConfig.resetForTests();
+expect(() => new AppConfig()).toThrow('AppConfig.instance');
+expect(AppConfig.instance).toBeInstanceOf(AppConfig);` },
+      { name: 'resetForTests создаёт новый экземпляр', code: `AppConfig.resetForTests();
+const first = AppConfig.instance;
+first.set('a', 1);
+AppConfig.resetForTests();
+expect(AppConfig.instance).not.toBe(first);
+expect(AppConfig.instance.get('a')).toBeUndefined();` },
+    ],
+    hints: [
+      'Храните экземпляр в static #instance и создавайте его только при первом обращении к геттеру.',
+      'Флаг static #creating поднимайте прямо перед new внутри instance и опускайте в finally.',
+      'Различайте «ключа нет» и «значение равно 0»: используйте Map.has, а не ??.',
+    ],
+  },
 ] as const satisfies readonly Exercise[];

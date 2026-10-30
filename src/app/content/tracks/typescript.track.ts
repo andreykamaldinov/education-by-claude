@@ -31,6 +31,15 @@ export const TYPESCRIPT_TRACK = {
           tags: ['type', 'interface', 'union', 'intersection'],
         },
         {
+          id: 'classes',
+          title: 'Классы: static, private, protected, abstract',
+          summary:
+            'Модификаторы доступа public/private/protected и #private, readonly, static, abstract, override, параметры конструктора и геттеры.',
+          level: 'basic',
+          minutes: 18,
+          tags: ['class', 'static', 'private', 'protected', 'abstract', 'readonly', '#private', 'override'],
+        },
+        {
           id: 'narrowing',
           title: 'Сужение типов и type guards',
           summary: 'typeof, in, instanceof, discriminated unions, пользовательские guard-функции и assertNever.',

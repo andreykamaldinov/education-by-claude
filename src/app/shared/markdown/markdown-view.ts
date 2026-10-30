@@ -8,10 +8,13 @@ import {
   input,
   output,
 } from '@angular/core';
+import { LocationStrategy } from '@angular/common';
 import { Router } from '@angular/router';
 import type { RenderedMarkdown } from './markdown.service';
 
 const COPY_RESET_MS = 1600;
+/** Original app route of an internal link, kept separately from the base-href-prefixed href. */
+const ROUTE_ATTRIBUTE = 'data-route';
 
 /**
  * Displays rendered markdown. Angular sanitizes the [innerHTML] binding (it drops `id`
@@ -31,6 +34,7 @@ export class MarkdownView {
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly renderer = inject(Renderer2);
   private readonly router = inject(Router);
+  private readonly locationStrategy = inject(LocationStrategy);
 
   readonly document = input.required<RenderedMarkdown>();
   /** Emits heading elements once anchors are assigned, for scroll-spy. */
@@ -49,6 +53,7 @@ export class MarkdownView {
           }
         });
         root.querySelectorAll<HTMLElement>('figure.code-block').forEach((figure) => this.addCopyButton(figure));
+        root.querySelectorAll<HTMLAnchorElement>('a[href^="/"]').forEach((anchor) => this.prefixBaseHref(anchor));
         this.headingsReady.emit(headings);
       },
     });
@@ -59,13 +64,26 @@ export class MarkdownView {
     if (!(target instanceof Element) || event.metaKey || event.ctrlKey || event.button !== 0) {
       return;
     }
-    const anchor = target.closest('a');
-    const href = anchor?.getAttribute('href');
-    if (!href || !href.startsWith('/')) {
+    const route = target.closest('a')?.getAttribute(ROUTE_ATTRIBUTE);
+    if (!route) {
       return;
     }
     event.preventDefault();
-    void this.router.navigateByUrl(href);
+    void this.router.navigateByUrl(route);
+  }
+
+  /**
+   * Lessons link to app routes like `/tracks/x`. When the app is served from a sub-path
+   * (GitHub Pages: `/repo/`), the raw href would break "open in new tab", so the href gets
+   * the base href and the route itself moves to a data attribute for router navigation.
+   */
+  private prefixBaseHref(anchor: HTMLAnchorElement): void {
+    if (anchor.hasAttribute(ROUTE_ATTRIBUTE)) {
+      return;
+    }
+    const route = anchor.getAttribute('href') ?? '/';
+    this.renderer.setAttribute(anchor, ROUTE_ATTRIBUTE, route);
+    this.renderer.setAttribute(anchor, 'href', this.locationStrategy.prepareExternalUrl(route));
   }
 
   private addCopyButton(figure: HTMLElement): void {

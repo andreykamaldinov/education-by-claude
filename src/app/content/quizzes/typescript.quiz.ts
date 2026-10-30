@@ -127,5 +127,110 @@ type Unpack<T> = T extends Promise<infer V> ? V : T;
       explanation:
         'Компилятор Angular читает метаданные декораторов и типы параметров из исходников при сборке и генерирует статические поля. В рантайме декораторы фактически не выполняются.',
     },
+    {
+      id: 'private-vs-hash',
+      prompt: 'Чем private из TypeScript отличается от поля #private?',
+      options: [
+        'Ничем, #private — просто сокращённая запись',
+        'private проверяет только компилятор, а #private скрывает поле в рантайме: его нет в JSON.stringify и Object.keys',
+        '#private работает только в Angular',
+        'private доступен наследникам, а #private — нет',
+      ],
+      correctIndex: 1,
+      explanation:
+        'После компиляции `private` стирается, и поле становится обычным свойством: его видно в `JSON.stringify` и можно прочитать через `obj[\'field\']`. `#field` — стандарт ECMAScript, приватность обеспечивает движок. Ни то ни другое наследникам не доступно. Подробнее — [Классы](/tracks/typescript/classes).',
+    },
+    {
+      id: 'private-other-instance',
+      prompt: 'Скомпилируется ли метод equals?',
+      code: `~~~ts
+class Point {
+  constructor(private x: number) {}
+  equals(other: Point) {
+    return this.x === other.x;
+  }
+}
+~~~`,
+      options: [
+        'Нет: к private-полю другого экземпляра обращаться нельзя',
+        'Да: private ограничивает доступ на уровне класса, а не экземпляра',
+        'Только с флагом strict: false',
+        'Только если x объявить как readonly',
+      ],
+      correctIndex: 1,
+      explanation:
+        'Приватность в TypeScript (как и в Java или C#) действует на уровне класса: внутри `Point` доступны private-члены любого экземпляра `Point`.',
+    },
+    {
+      id: 'protected-access',
+      prompt: 'Где доступен protected-член класса?',
+      options: [
+        'Только внутри самого класса',
+        'Внутри класса и его наследников, но не снаружи',
+        'Везде, кроме других модулей',
+        'Только в статических методах',
+      ],
+      correctIndex: 1,
+      explanation:
+        '`protected` — для класса и наследников. В Angular так помечают члены компонента, которые нужны только шаблону: шаблон их видит, внешний код нет.',
+    },
+    {
+      id: 'static-instance',
+      prompt: 'Что выведет код?',
+      code: `~~~ts
+class Counter {
+  static total = 0;
+  constructor() {
+    Counter.total++;
+  }
+}
+const c = new Counter();
+new Counter();
+console.log(Counter.total, (c as any).total);
+~~~`,
+      options: ['2 2', '2 undefined', '1 1', '0 undefined'],
+      correctIndex: 1,
+      explanation:
+        'static-поле принадлежит конструктору `Counter`, а не экземплярам. Через `c` его не видно, поэтому `c.total` — `undefined`.',
+    },
+    {
+      id: 'abstract-runtime',
+      prompt: 'Что произойдёт, если создать экземпляр абстрактного класса из обычного JavaScript-кода?',
+      options: [
+        'Движок бросит TypeError',
+        'Экземпляр создастся: abstract существует только на этапе компиляции',
+        'Вернётся undefined',
+        'Создастся экземпляр первого наследника',
+      ],
+      correctIndex: 1,
+      explanation:
+        'После компиляции абстрактный класс — обычный класс. Если нужна защита в рантайме, проверяйте `new.target` в конструкторе.',
+    },
+    {
+      id: 'private-constructor',
+      prompt: 'Зачем объявлять конструктор как private?',
+      options: [
+        'Чтобы класс нельзя было наследовать и создать через new снаружи — экземпляры создаются только через static-методы (singleton, фабрика)',
+        'Чтобы ускорить создание объектов',
+        'Чтобы поля стали приватными автоматически',
+        'Это запрещено в TypeScript',
+      ],
+      correctIndex: 0,
+      explanation:
+        'С `private constructor` вызвать `new` можно только внутри класса, например в `static get instance()`. `protected constructor` запрещает прямое создание, но разрешает наследование.',
+    },
+    {
+      id: 'override-keyword',
+      prompt: 'Какую ошибку помогает поймать модификатор override вместе с noImplicitOverride?',
+      options: [
+        'Вызов метода до конструктора',
+        'Ситуацию, когда метод в родителе переименовали или удалили, а наследник молча объявил новый метод',
+        'Утечку памяти в подписках',
+        'Неправильный тип возвращаемого значения в интерфейсе',
+      ],
+      correctIndex: 1,
+      explanation:
+        'С `override` компилятор проверяет, что в базовом классе есть такой член. `noImplicitOverride` делает слово обязательным, поэтому случайное переопределение тоже становится видно.',
+    },
   ],
 } as const satisfies Quiz;
