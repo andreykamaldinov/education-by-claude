@@ -1,22 +1,21 @@
-name: Deploy to GitHub Pages
+name: Deploy to gh-pages
 
+# Builds the app from main and publishes the static build to the gh-pages branch.
+# GitHub Pages serves that branch: Settings → Pages → Deploy from a branch → gh-pages / (root).
 on:
   push:
     branches: [main]
   workflow_dispatch:
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write
 
-# One deployment at a time; a newer push cancels the older one still in progress.
 concurrency:
-  group: pages
+  group: gh-pages
   cancel-in-progress: true
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -40,24 +39,19 @@ jobs:
           if [[ "$REPO" == *.github.io ]]; then BASE_HREF="/"; else BASE_HREF="/$REPO/"; fi
           npx ng build --base-href "$BASE_HREF"
 
-      - name: Add SPA fallback
+      - name: Add SPA fallback and disable Jekyll
         run: |
           # GitHub Pages has no rewrites: unknown paths serve 404.html, so it must boot the app too.
           cp dist/education/browser/index.html dist/education/browser/404.html
+          # Without .nojekyll Pages runs Jekyll, which chokes on Angular {{ }} in the lessons.
           touch dist/education/browser/.nojekyll
 
-      - uses: actions/configure-pages@v5
-
-      - uses: actions/upload-pages-artifact@v4
-        with:
-          path: dist/education/browser
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - id: deployment
-        uses: actions/deploy-pages@v4
+      - name: Publish to gh-pages branch
+        run: |
+          cd dist/education/browser
+          git init -q -b gh-pages
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -q -m "Deploy ${GITHUB_SHA::7}"
+          git push -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" gh-pages
